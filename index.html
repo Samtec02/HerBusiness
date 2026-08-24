@@ -1,0 +1,2586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>HerBusiness · manage your business</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f7f5fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+        #app {
+            max-width: 420px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06), 0 6px 12px rgba(0,0,0,0.03);
+            overflow: hidden;
+            position: relative;
+            min-height: 780px;
+            display: flex;
+            flex-direction: column;
+        }
+        #setupOverlay {
+            position: absolute;
+            inset: 0;
+            background: #ffffff;
+            z-index: 1000;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 32px;
+            transition: opacity 0.3s;
+        }
+        #setupOverlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .setup-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e192b;
+            margin-bottom: 4px;
+        }
+        .setup-sub {
+            color: #6b5f7a;
+            margin-bottom: 28px;
+            font-size: 16px;
+        }
+        .setup-field {
+            margin-bottom: 18px;
+        }
+        .setup-field label {
+            display: block;
+            font-weight: 500;
+            color: #2e253a;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .setup-field input,
+        .setup-field select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e3dcec;
+            border-radius: 18px;
+            font-size: 16px;
+            background: #faf8fd;
+            transition: 0.2s;
+        }
+        .setup-field input:focus,
+        .setup-field select:focus {
+            outline: none;
+            border-color: #b198d4;
+            background: white;
+        }
+        .setup-field select {
+            appearance: auto;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #5f3d8a;
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 17px;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 6px 14px rgba(95, 61, 138, 0.25);
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+        .btn-secondary {
+            background: #f0ebf7;
+            border: none;
+            color: #3f2a5e;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .btn-secondary:active {
+            transform: scale(0.96);
+        }
+        .btn-success {
+            background: #d9f0e1;
+            border: none;
+            color: #1d6f44;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .btn-success:active {
+            transform: scale(0.96);
+        }
+        .btn-danger {
+            background: #fce4e4;
+            border: none;
+            color: #b13e3e;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .btn-danger:active {
+            transform: scale(0.96);
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px 18px 80px;
+            overflow-y: auto;
+            display: none;
+        }
+        .main-content.active {
+            display: block;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .logo-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f0ebf7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 2px dashed #d4c8e0;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        .logo-container:hover {
+            border-color: #5f3d8a;
+            background: #e8dff2;
+        }
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .logo-container .logo-placeholder {
+            font-size: 20px;
+            color: #b198d4;
+            font-weight: 300;
+            text-align: center;
+            line-height: 1.2;
+            padding: 4px;
+        }
+        .logo-container .logo-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.2s;
+            border-radius: 50%;
+            color: white;
+            font-size: 11px;
+            text-align: center;
+            padding: 4px;
+        }
+        .logo-container:hover .logo-overlay {
+            opacity: 1;
+        }
+        .greeting {
+            flex: 1;
+            min-width: 0;
+        }
+        .greeting h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1425;
+        }
+        .greeting p {
+            color: #6b5f7a;
+            font-size: 14px;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .business-badge {
+            background: #f0ebf7;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #3f2a5e;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .business-badge:hover {
+            background: #e5daf2;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0 18px;
+        }
+        .stat-card {
+            background: #faf8fd;
+            border-radius: 24px;
+            padding: 14px 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0ebf7;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #7b6e8a;
+            letter-spacing: 0.3px;
+        }
+        .stat-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e142b;
+            margin-top: 4px;
+        }
+        .stat-card .sub {
+            font-size: 13px;
+            color: #7b6e8a;
+            margin-top: 4px;
+        }
+        .stat-card .profit-positive {
+            color: #1d6f44;
+        }
+        .stat-card .profit-negative {
+            color: #b13e3e;
+        }
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 18px 0 22px;
+        }
+        .quick-btn {
+            background: #f5f1fb;
+            border-radius: 40px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #2f1f44;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: 0.15s;
+            flex: 1 0 auto;
+            justify-content: center;
+        }
+        .quick-btn i {
+            color: #5f3d8a;
+        }
+        .quick-btn:active {
+            background: #e5daf2;
+        }
+        .chart-placeholder {
+            background: #faf8fd;
+            border-radius: 28px;
+            padding: 16px 12px;
+            border: 1px solid #eee8f5;
+            margin: 10px 0 16px;
+            text-align: center;
+            color: #6b5f7a;
+            font-size: 14px;
+        }
+        .chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 80px;
+            margin-top: 8px;
+        }
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .bar {
+            width: 24px;
+            background: #b198d4;
+            border-radius: 12px 12px 6px 6px;
+            height: 20px;
+            transition: 0.3s;
+        }
+        .bar-label {
+            font-size: 10px;
+            color: #5f4f72;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .screen-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .screen-title .badge-count {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b5f7a;
+            background: #f0ebf7;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .list-item {
+            background: #faf8fd;
+            border-radius: 20px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border: 1px solid #ede7f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item .info {
+            font-size: 14px;
+            flex: 1;
+        }
+        .list-item .info strong {
+            display: block;
+            color: #1e142b;
+        }
+        .list-item .info .meta {
+            font-size: 12px;
+            color: #7b6e8a;
+        }
+        .list-item .info .meta .profit-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        .profit-badge.positive {
+            background: #d9f0e1;
+            color: #1d6f44;
+        }
+        .profit-badge.negative {
+            background: #fce4e4;
+            color: #b13e3e;
+        }
+        .stock-badge.in-stock {
+            background: #d9f0e1;
+            color: #1d6f44;
+        }
+        .stock-badge.low-stock {
+            background: #fce9d4;
+            color: #a8662c;
+        }
+        .stock-badge.out-of-stock {
+            background: #fce4e4;
+            color: #b13e3e;
+        }
+        .badge {
+            background: #e6def0;
+            border-radius: 60px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #3f2a5e;
+        }
+        .badge.warning {
+            background: #fce9d4;
+            color: #a8662c;
+        }
+        .badge.success {
+            background: #d9f0e1;
+            color: #1d6f44;
+        }
+        .badge.info {
+            background: #d4e4f7;
+            color: #1a4f7a;
+        }
+        .badge.danger {
+            background: #fce4e4;
+            color: #b13e3e;
+        }
+        .fab {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            background: #5f3d8a;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 14px 22px;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(95, 61, 138, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .fab:active {
+            transform: scale(0.94);
+        }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 8px 14px;
+            background: white;
+            border-top: 1px solid #ede7f5;
+            position: sticky;
+            bottom: 0;
+            z-index: 30;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 11px;
+            color: #8d7e9e;
+            background: transparent;
+            border: none;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: 0.1s;
+            gap: 2px;
+        }
+        .nav-item i {
+            font-size: 20px;
+        }
+        .nav-item.active {
+            color: #5f3d8a;
+            font-weight: 500;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 32px 32px 0 0;
+            padding: 28px 20px 40px;
+            transform: translateY(20px);
+            transition: 0.25s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.open .modal-card {
+            transform: translateY(0);
+        }
+        .modal-card h3 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        .modal-field {
+            margin-bottom: 14px;
+        }
+        .modal-field label {
+            font-size: 13px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
+            color: #2e253a;
+        }
+        .modal-field input,
+        .modal-field select,
+        .modal-field textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e3dcec;
+            border-radius: 16px;
+            background: #faf8fd;
+            font-size: 15px;
+        }
+        .modal-field textarea {
+            min-height: 60px;
+        }
+        .modal-field .logo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px dashed #b198d4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px auto;
+            overflow: hidden;
+            background: #faf8fd;
+        }
+        .modal-field .logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal-field .logo-preview .placeholder {
+            color: #8d7e9e;
+            font-size: 12px;
+            text-align: center;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+        }
+        .btn-outline {
+            background: #f0ebf7;
+            color: #3f2a5e;
+        }
+        .toast {
+            position: fixed;
+            bottom: 130px;
+            left: 20px;
+            right: 20px;
+            background: #1e142b;
+            color: white;
+            padding: 14px 18px;
+            border-radius: 60px;
+            text-align: center;
+            font-weight: 500;
+            z-index: 300;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .ad-placeholder {
+            background: #f3eff8;
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            color: #7b6e8a;
+            font-size: 12px;
+            margin: 16px 0 6px;
+            border: 1px dashed #c9bcdb;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mt-2 {
+            margin-top: 12px;
+        }
+        .mb-1 {
+            margin-bottom: 6px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .empty-state {
+            color: #8d7e9e;
+            padding: 30px 10px;
+            text-align: center;
+        }
+        .progress-bar {
+            height: 10px;
+            background: #ede7f5;
+            border-radius: 20px;
+            margin: 8px 0 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #5f3d8a;
+            border-radius: 20px;
+        }
+        .backup-section {
+            background: #faf8fd;
+            border-radius: 24px;
+            padding: 16px;
+            border: 2px dashed #b198d4;
+            margin: 12px 0;
+        }
+        .backup-section .label {
+            font-weight: 600;
+            color: #3f2a5e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .backup-section .label i {
+            color: #5f3d8a;
+        }
+        .report-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .logo-upload-btn {
+            background: #5f3d8a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .logo-upload-btn:active {
+            transform: scale(0.96);
+        }
+        .remove-logo-btn {
+            background: #fce4e4;
+            color: #b13e3e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .remove-logo-btn:active {
+            transform: scale(0.96);
+        }
+        .product-select {
+            padding: 12px 14px;
+            border: 1.5px solid #e3dcec;
+            border-radius: 16px;
+            background: #faf8fd;
+            font-size: 15px;
+            width: 100%;
+        }
+        .product-select:focus {
+            outline: none;
+            border-color: #b198d4;
+            background: white;
+        }
+        .profit-summary {
+            background: #f5f1fb;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ede7f5;
+        }
+        .profit-summary .label {
+            font-size: 12px;
+            color: #7b6e8a;
+        }
+        .profit-summary .value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .currency-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .currency-option {
+            padding: 10px 8px;
+            border: 2px solid #e3dcec;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #faf8fd;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .currency-option:hover {
+            border-color: #b198d4;
+            background: #f0ebf7;
+        }
+        .currency-option.selected {
+            border-color: #5f3d8a;
+            background: #f0ebf7;
+            color: #5f3d8a;
+        }
+        .report-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0 12px 0;
+        }
+        .report-type-btn {
+            padding: 12px 8px;
+            border: 2px solid #e3dcec;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #faf8fd;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .report-type-btn:hover {
+            border-color: #b198d4;
+            background: #f0ebf7;
+        }
+        .report-type-btn.active {
+            border-color: #5f3d8a;
+            background: #5f3d8a;
+            color: white;
+        }
+        .report-type-btn i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        @media (min-width: 600px) {
+            #app {
+                max-width: 480px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="setupOverlay">
+            <div style="margin-bottom: 8px;"><i class="fas fa-spa" style="font-size: 36px; color:#5f3d8a;"></i></div>
+            <div class="setup-title">Welcome to HerBusiness 🌸</div>
+            <div class="setup-sub">Let's set up your business.</div>
+            <div class="setup-field"><label>Business name</label><input id="setupBizName" placeholder="e.g. Ama's Beauty"></div>
+            <div class="setup-field"><label>Owner's name</label><input id="setupOwner" placeholder="Your name"></div>
+            <div class="setup-field"><label>Business type</label>
+                <select id="setupBizType"><option>Fashion</option><option>Beauty</option><option>Food</option><option>Hairdressing</option><option>Cosmetics</option><option>Retail</option><option>Online business</option><option>Tailoring</option><option>Other</option></select>
+            </div>
+            <div class="setup-field">
+                <label>Select your currency</label>
+                <select id="setupCurrency">
+                    <option value="GH₵">🇬🇭 Ghana Cedi (GH₵)</option>
+                    <option value="$">🇺🇸 US Dollar ($)</option>
+                    <option value="€">🇪🇺 Euro (€)</option>
+                    <option value="£">🇬🇧 British Pound (£)</option>
+                    <option value="₦">🇳🇬 Nigerian Naira (₦)</option>
+                    <option value="KSh">🇰🇪 Kenyan Shilling (KSh)</option>
+                    <option value="TSh">🇹🇿 Tanzanian Shilling (TSh)</option>
+                    <option value="R">🇿🇦 South African Rand (R)</option>
+                    <option value="UGX">🇺🇬 Ugandan Shilling (UGX)</option>
+                    <option value="₵">🇬🇭 Ghana Cedi (₵)</option>
+                    <option value="CFA">🇨🇲 CFA Franc (CFA)</option>
+                    <option value="₹">🇮🇳 Indian Rupee (₹)</option>
+                    <option value="¥">🇯🇵 Japanese Yen (¥)</option>
+                    <option value="A$">🇦🇺 Australian Dollar (A$)</option>
+                    <option value="C$">🇨🇦 Canadian Dollar (C$)</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="setupFinish">Start managing 🌱</button>
+            <p style="font-size:12px; color:#8d7e9e; margin-top:16px;">Your data stays on your device.</p>
+        </div>
+
+        <div id="toast" class="toast">✅ Done</div>
+
+        <div id="mainApp" class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="logo-container" id="logoContainer" onclick="openLogoModal()">
+                        <div id="logoDisplay">
+                            <span class="logo-placeholder" id="logoPlaceholder">+</span>
+                        </div>
+                        <div class="logo-overlay">Add<br>Logo</div>
+                    </div>
+                    <div class="greeting">
+                        <h2 id="greetingText">Good morning 👋</h2>
+                        <p id="bizNameDisplay">My Business</p>
+                    </div>
+                </div>
+                <div class="business-badge" id="ownerDisplay" onclick="showBackupOptions()">👤 ⬇️</div>
+            </div>
+
+            <div id="screen-dashboard" class="screen active">
+                <div class="stats-grid" id="dashStats"></div>
+                <div class="quick-actions">
+                    <button class="quick-btn" data-action="sale"><i class="fas fa-plus-circle"></i> Add Sale</button>
+                    <button class="quick-btn" data-action="expense"><i class="fas fa-minus-circle"></i> Add Expense</button>
+                    <button class="quick-btn" data-action="customer"><i class="fas fa-user-plus"></i> Add Customer</button>
+                    <button class="quick-btn" data-action="product"><i class="fas fa-box"></i> Add Product</button>
+                </div>
+                <div class="chart-placeholder">
+                    <div>📊 7-day profit trend</div>
+                    <div class="chart-bars" id="chartBars"></div>
+                </div>
+                <div class="ad-placeholder"><i class="fas fa-ad"></i> Advertisement</div>
+            </div>
+
+            <div id="screen-sales" class="screen"><div class="screen-title">💰 Sales <span class="badge-count" id="salesCount">0</span></div><div id="salesList"></div><button class="fab" id="fabSale"><i class="fas fa-plus"></i> Sale</button></div>
+            <div id="screen-expenses" class="screen"><div class="screen-title">💸 Expenses</div><div id="expenseList"></div><button class="fab" id="fabExpense"><i class="fas fa-plus"></i> Expense</button></div>
+            <div id="screen-customers" class="screen"><div class="screen-title">👥 Customers</div><div id="customerList"></div><button class="fab" id="fabCustomer"><i class="fas fa-user-plus"></i> Customer</button></div>
+            <div id="screen-inventory" class="screen"><div class="screen-title">📦 Inventory <span class="badge-count" id="inventoryCount">0 items</span></div><div id="inventoryList"></div><button class="fab" id="fabProduct"><i class="fas fa-plus"></i> Product</button></div>
+            <div id="screen-more" class="screen"><div class="screen-title">☰ More</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                    <button class="quick-btn" data-nav="expenses"><i class="fas fa-wallet"></i> Expenses</button>
+                    <button class="quick-btn" data-nav="debts"><i class="fas fa-hand-holding-usd"></i> Debts</button>
+                    <button class="quick-btn" data-nav="goals"><i class="fas fa-bullseye"></i> Goals</button>
+                    <button class="quick-btn" data-nav="reminders"><i class="fas fa-bell"></i> Reminders</button>
+                    <button class="quick-btn" data-nav="reports"><i class="fas fa-file-alt"></i> Reports</button>
+                    <button class="quick-btn" data-nav="settings"><i class="fas fa-cog"></i> Settings</button>
+                </div>
+                <div class="ad-placeholder" style="margin-top:24px;"><i class="fas fa-ad"></i> Advertisement</div>
+            </div>
+            <div id="screen-debts" class="screen"><div class="screen-title">💳 Debts</div><div id="debtsList"></div><button class="fab" id="fabDebt"><i class="fas fa-plus"></i> Debt</button></div>
+            <div id="screen-goals" class="screen"><div class="screen-title">🎯 Goals</div><div id="goalsDisplay"></div><button class="fab" id="fabGoal"><i class="fas fa-edit"></i> Set Goals</button></div>
+            <div id="screen-reminders" class="screen"><div class="screen-title">⏰ Reminders</div><div id="remindersList"></div><button class="fab" id="fabReminder"><i class="fas fa-plus"></i> Reminder</button></div>
+            <div id="screen-reports" class="screen"><div class="screen-title">📊 Reports</div><div id="reportsContent"></div><button class="fab" id="printReport"><i class="fas fa-print"></i> Print</button></div>
+            <div id="screen-settings" class="screen"><div class="screen-title">⚙️ Settings</div><div id="settingsContent"></div></div>
+        </div>
+
+        <div class="bottom-nav" id="bottomNav">
+            <button class="nav-item active" data-screen="dashboard"><i class="fas fa-home"></i><span>Home</span></button>
+            <button class="nav-item" data-screen="sales"><i class="fas fa-coins"></i><span>Sales</span></button>
+            <button class="nav-item" data-screen="inventory"><i class="fas fa-boxes"></i><span>Inventory</span></button>
+            <button class="nav-item" data-screen="customers"><i class="fas fa-users"></i><span>Customers</span></button>
+            <button class="nav-item" data-screen="more"><i class="fas fa-bars"></i><span>More</span></button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"><div class="modal-card" id="modalCard"></div></div>
+
+    <script>
+        (function() {
+            // ---------- data layer ----------
+            const STORE = {
+                sales: [],
+                expenses: [],
+                customers: [],
+                products: [],
+                debts: [],
+                goals: {},
+                reminders: [],
+                settings: { currency: 'GH₵', bizName: '', owner: '', bizType: '', logo: null }
+            };
+
+            // ---------- CURRENCY LIST ----------
+            const CURRENCIES = [
+                { symbol: 'GH₵', name: 'Ghana Cedi', flag: '🇬🇭' },
+                { symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
+                { symbol: '€', name: 'Euro', flag: '🇪🇺' },
+                { symbol: '£', name: 'British Pound', flag: '🇬🇧' },
+                { symbol: '₦', name: 'Nigerian Naira', flag: '🇳🇬' },
+                { symbol: 'KSh', name: 'Kenyan Shilling', flag: '🇰🇪' },
+                { symbol: 'TSh', name: 'Tanzanian Shilling', flag: '🇹🇿' },
+                { symbol: 'R', name: 'South African Rand', flag: '🇿🇦' },
+                { symbol: 'UGX', name: 'Ugandan Shilling', flag: '🇺🇬' },
+                { symbol: '₵', name: 'Ghana Cedi (Alt)', flag: '🇬🇭' },
+                { symbol: 'CFA', name: 'CFA Franc', flag: '🇨🇲' },
+                { symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳' },
+                { symbol: '¥', name: 'Japanese Yen', flag: '🇯🇵' },
+                { symbol: 'A$', name: 'Australian Dollar', flag: '🇦🇺' },
+                { symbol: 'C$', name: 'Canadian Dollar', flag: '🇨🇦' }
+            ];
+
+            // ---------- BACKUP SYSTEM ----------
+            function backupData() {
+                try {
+                    const data = JSON.stringify(STORE);
+                    localStorage.setItem('herbusiness_data', data);
+                    sessionStorage.setItem('herbusiness_backup', data);
+                    saveToIndexedDB(data);
+                    return true;
+                } catch (e) {
+                    console.warn('Backup failed:', e);
+                    return false;
+                }
+            }
+
+            function saveToIndexedDB(data) {
+                try {
+                    const request = indexedDB.open('HerBusinessBackup', 1);
+                    request.onupgradeneeded = function(e) {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('backup')) {
+                            db.createObjectStore('backup', { keyPath: 'id' });
+                        }
+                    };
+                    request.onsuccess = function(e) {
+                        const db = e.target.result;
+                        const transaction = db.transaction(['backup'], 'readwrite');
+                        const store = transaction.objectStore('backup');
+                        store.put({ id: 'mainData', data: data, timestamp: Date.now() });
+                        db.close();
+                    };
+                    request.onerror = function(e) {
+                        console.warn('IndexedDB backup failed:', e);
+                    };
+                } catch (e) {
+                    console.warn('IndexedDB not available:', e);
+                }
+            }
+
+            function restoreFromBackup() {
+                try {
+                    let data = localStorage.getItem('herbusiness_data');
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        if (parsed.settings && parsed.settings.bizName) {
+                            Object.assign(STORE, parsed);
+                            return true;
+                        }
+                    }
+                    data = sessionStorage.getItem('herbusiness_backup');
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        if (parsed.settings && parsed.settings.bizName) {
+                            Object.assign(STORE, parsed);
+                            localStorage.setItem('herbusiness_data', data);
+                            return true;
+                        }
+                    }
+                    return restoreFromIndexedDB();
+                } catch (e) {
+                    console.warn('Restore failed:', e);
+                    return false;
+                }
+            }
+
+            function restoreFromIndexedDB() {
+                return new Promise((resolve) => {
+                    try {
+                        const request = indexedDB.open('HerBusinessBackup', 1);
+                        request.onsuccess = function(e) {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains('backup')) {
+                                db.close();
+                                resolve(false);
+                                return;
+                            }
+                            const transaction = db.transaction(['backup'], 'readonly');
+                            const store = transaction.objectStore('backup');
+                            const getRequest = store.get('mainData');
+                            getRequest.onsuccess = function() {
+                                if (getRequest.result && getRequest.result.data) {
+                                    const parsed = JSON.parse(getRequest.result.data);
+                                    if (parsed.settings && parsed.settings.bizName) {
+                                        Object.assign(STORE, parsed);
+                                        localStorage.setItem('herbusiness_data', getRequest.result.data);
+                                        db.close();
+                                        resolve(true);
+                                        return;
+                                    }
+                                }
+                                db.close();
+                                resolve(false);
+                            };
+                            getRequest.onerror = function() {
+                                db.close();
+                                resolve(false);
+                            };
+                        };
+                        request.onerror = function() {
+                            resolve(false);
+                        };
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            }
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem('herbusiness_data');
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed.settings && parsed.settings.bizName) {
+                            Object.assign(STORE, parsed);
+                            return true;
+                        }
+                    }
+                    return restoreFromBackup();
+                } catch (e) {
+                    console.warn('Load failed, attempting restore:', e);
+                    return restoreFromBackup();
+                }
+            }
+
+            function saveData() {
+                backupData();
+            }
+
+            // ---------- SEED SAMPLE DATA ----------
+            function seedSampleData() {
+                if (STORE.sales.length === 0 && STORE.expenses.length === 0 && STORE.products.length === 0) {
+                    const today = new Date();
+
+                    const sampleProducts = [
+                        { name: 'Hair Cream', category: 'Beauty', qty: 45, buyPrice: 15, sellPrice: 30,
+                        minStock: 10 },
+                        { name: 'Body Lotion', category: 'Beauty', qty: 30, buyPrice: 12, sellPrice: 25,
+                        minStock: 8 },
+                        { name: 'Lipstick', category: 'Makeup', qty: 20, buyPrice: 8, sellPrice: 20,
+                        minStock: 5 },
+                        { name: 'Foundation', category: 'Makeup', qty: 15, buyPrice: 18, sellPrice: 35,
+                        minStock: 5 },
+                        { name: 'Shampoo', category: 'Hair Care', qty: 25, buyPrice: 10, sellPrice: 22,
+                        minStock: 7 }
+                    ];
+                    sampleProducts.forEach(p => {
+                        STORE.products.push({
+                            id: 'prod_' + Date.now() + '_' + p.name.replace(/\s/g, '_'),
+                            name: p.name,
+                            category: p.category,
+                            qty: p.qty,
+                            buyPrice: p.buyPrice,
+                            sellPrice: p.sellPrice,
+                            minStock: p.minStock
+                        });
+                    });
+
+                    const customers = ['Ama Mensah', 'Esi Addo', 'Abena Osei', 'Akua Afriyie', 'Yaa Asantewaa',
+                        'Adwoa Poku'
+                    ];
+                    const phoneNumbers = ['0241234567', '0242345678', '0243456789', '0244567890', '0245678901', '0246789012'];
+                    const paymentMethods = ['Cash', 'Mobile Money', 'Bank', 'Credit'];
+
+                    for (let i = 0; i < 20; i++) {
+                        const daysAgo = Math.floor(Math.random() * 30);
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - daysAgo);
+
+                        const product = STORE.products[Math.floor(Math.random() * STORE.products.length)];
+                        const qty = Math.floor(Math.random() * 3) + 1;
+                        const price = product.sellPrice;
+                        const total = qty * price;
+                        const cost = product.buyPrice * qty;
+                        const profit = total - cost;
+                        const payment = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+                        const customerIdx = Math.floor(Math.random() * customers.length);
+
+                        STORE.sales.push({
+                            id: 'sale_' + Date.now() + '_' + i,
+                            product: product.name,
+                            productId: product.id,
+                            customer: customers[customerIdx],
+                            customerPhone: phoneNumbers[customerIdx],
+                            qty: qty,
+                            price: price,
+                            total: total,
+                            cost: cost,
+                            profit: profit,
+                            payment: payment,
+                            date: date.toISOString(),
+                            status: payment === 'Credit' ? 'Credit' : 'Paid'
+                        });
+
+                        product.qty = Math.max(0, product.qty - qty);
+
+                        if (payment === 'Credit') {
+                            STORE.debts.push({
+                                id: 'debt_' + Date.now() + '_' + i,
+                                customer: customers[customerIdx],
+                                amount: total,
+                                due: new Date(date.getTime() + 7 * 86400000).toISOString().slice(0, 10),
+                                status: 'Outstanding',
+                                date: date.toISOString()
+                            });
+                        }
+                    }
+
+                    const expenseCategories = ['Stock', 'Transportation', 'Rent', 'Electricity', 'Water', 'Advertising',
+                        'Packaging', 'Staff'
+                    ];
+                    const expenseDescriptions = ['Bought stock', 'Transport cost', 'Shop rent', 'Electricity bill',
+                        'Water bill', 'Advertisement', 'Packaging materials', 'Staff salary'
+                    ];
+
+                    for (let i = 0; i < 15; i++) {
+                        const daysAgo = Math.floor(Math.random() * 30);
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - daysAgo);
+
+                        const amount = Math.floor(Math.random() * 200) + 10;
+                        const category = expenseCategories[Math.floor(Math.random() * expenseCategories.length)];
+
+                        STORE.expenses.push({
+                            id: 'exp_' + Date.now() + '_' + i,
+                            desc: expenseDescriptions[Math.floor(Math.random() * expenseDescriptions.length)],
+                            amount: amount,
+                            category: category,
+                            date: date.toISOString()
+                        });
+                    }
+
+                    const sampleCustomers = ['Ama Mensah', 'Esi Addo', 'Abena Osei', 'Akua Afriyie', 'Yaa Asantewaa',
+                        'Adwoa Poku'
+                    ];
+                    const samplePhones = ['0241234567', '0242345678', '0243456789', '0244567890', '0245678901', '0246789012'];
+                    sampleCustomers.forEach((name, i) => {
+                        STORE.customers.push({
+                            id: 'cust_' + Date.now() + '_' + i,
+                            name: name,
+                            phone: samplePhones[i],
+                            address: 'Accra, Ghana',
+                            notes: 'Regular customer',
+                            totalPurchases: Math.floor(Math.random() * 500) + 50,
+                            paid: Math.floor(Math.random() * 300) + 20,
+                            outstanding: Math.floor(Math.random() * 200) + 10
+                        });
+                    });
+
+                    STORE.goals = {
+                        dailySales: 500,
+                        weeklySales: 3000,
+                        monthlySales: 12000,
+                        monthlyProfit: 5000,
+                        savings: 8000
+                    };
+
+                    const sampleReminders = [
+                        { title: 'Pay rent', date: new Date(today.getTime() + 5 * 86400000).toISOString().slice(0,
+                            10), time: '09:00', notes: 'Monthly shop rent', completed: false },
+                        { title: 'Buy stock', date: new Date(today.getTime() + 2 * 86400000).toISOString().slice(0,
+                            10), time: '14:00', notes: 'Order new products', completed: false },
+                        { title: 'Call customer', date: new Date(today.getTime() + 1 * 86400000).toISOString().slice(
+                            0, 10), time: '11:30', notes: 'Follow up on order', completed: false }
+                    ];
+                    sampleReminders.forEach(r => {
+                        STORE.reminders.push({
+                            id: 'rem_' + Date.now() + '_' + r.title.replace(/\s/g, '_'),
+                            title: r.title,
+                            date: r.date,
+                            time: r.time,
+                            notes: r.notes,
+                            completed: r.completed
+                        });
+                    });
+
+                    saveData();
+                }
+            }
+
+            // ---------- PROFIT CALCULATION FUNCTIONS ----------
+            function getDateStr(dateStr) {
+                if (!dateStr) return '';
+                return dateStr.slice(0, 10);
+            }
+
+            function getWeekStart() {
+                const d = new Date();
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                d.setDate(diff);
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+
+            function getMonthStart() {
+                const d = new Date();
+                d.setDate(1);
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+
+            function calculateSaleProfit(sale) {
+                const product = STORE.products.find(p => p.id === sale.productId);
+                if (product) {
+                    const cost = product.buyPrice * sale.qty;
+                    const profit = sale.total - cost;
+                    return { cost, profit };
+                }
+                return { cost: 0, profit: 0 };
+            }
+
+            function getDailySalesProfit(date) {
+                const daySales = STORE.sales.filter(s => getDateStr(s.date) === date);
+                let totalSales = 0,
+                    totalCost = 0,
+                    totalProfit = 0;
+                daySales.forEach(sale => {
+                    const { cost, profit } = calculateSaleProfit(sale);
+                    totalSales += sale.total;
+                    totalCost += cost;
+                    totalProfit += profit;
+                });
+                return { totalSales, totalCost, totalProfit, count: daySales.length };
+            }
+
+            function getPeriodProfit(startDate, endDate) {
+                const periodSales = STORE.sales.filter(s => {
+                    const sDate = getDateStr(s.date);
+                    return sDate >= startDate && sDate <= endDate;
+                });
+                let totalSales = 0,
+                    totalCost = 0,
+                    totalProfit = 0;
+                periodSales.forEach(sale => {
+                    const { cost, profit } = calculateSaleProfit(sale);
+                    totalSales += sale.total;
+                    totalCost += cost;
+                    totalProfit += profit;
+                });
+                return { totalSales, totalCost, totalProfit, count: periodSales.length };
+            }
+
+            // ---------- LOGO FUNCTIONS ----------
+            function openLogoModal() {
+                const currentLogo = STORE.settings.logo || '';
+                const html = `
+                    <h3>📸 Business Logo</h3>
+                    <p style="color:#6b5f7a; margin-bottom:16px;">Upload a logo for your business. It will appear on the dashboard and reports.</p>
+                    <div class="modal-field">
+                        <label>Current Logo</label>
+                        <div class="logo-preview" id="logoPreview">
+                            ${currentLogo ? `<img src="${currentLogo}" alt="Business Logo">` : `<div class="placeholder">No logo uploaded</div>`}
+                        </div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Upload New Logo</label>
+                        <input type="file" id="logoFileInput" accept="image/*" style="padding:8px; border:1.5px solid #e3dcec; border-radius:16px; width:100%;">
+                        <button class="logo-upload-btn" id="uploadLogoBtn"><i class="fas fa-upload"></i> Upload Logo</button>
+                        ${currentLogo ? `<button class="remove-logo-btn" id="removeLogoBtn"><i class="fas fa-trash"></i> Remove Logo</button>` : ''}
+                    </div>
+                    <div class="modal-actions"><button id="modalCancel" class="btn-outline">Close</button></div>
+                `;
+
+                const overlay = document.getElementById('modalOverlay');
+                document.getElementById('modalCard').innerHTML = html;
+                overlay.classList.add('open');
+
+                document.getElementById('uploadLogoBtn')?.addEventListener('click', function() {
+                    const fileInput = document.getElementById('logoFileInput');
+                    if (fileInput.files && fileInput.files[0]) {
+                        const file = fileInput.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            STORE.settings.logo = e.target.result;
+                            saveData();
+                            updateLogoDisplay();
+                            showToast('✅ Logo uploaded successfully!');
+                            overlay.classList.remove('open');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        showToast('❌ Please select an image file');
+                    }
+                });
+
+                document.getElementById('removeLogoBtn')?.addEventListener('click', function() {
+                    if (confirm('Remove your business logo?')) {
+                        STORE.settings.logo = null;
+                        saveData();
+                        updateLogoDisplay();
+                        showToast('Logo removed');
+                        overlay.classList.remove('open');
+                    }
+                });
+
+                document.getElementById('modalCancel')?.addEventListener('click', () => overlay.classList.remove('open'));
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) overlay.classList.remove('open');
+                };
+            }
+
+            function updateLogoDisplay() {
+                const logo = STORE.settings.logo;
+                const container = document.getElementById('logoDisplay');
+                if (logo) {
+                    container.innerHTML = `<img src="${logo}" alt="Business Logo" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    container.innerHTML = `<span class="logo-placeholder" id="logoPlaceholder">+</span>`;
+                }
+            }
+
+            // ---------- EXPORT/IMPORT FUNCTIONS ----------
+            function exportData() {
+                const data = JSON.stringify(STORE, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `HerBusiness_Backup_${todayStr()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📦 Data exported successfully!');
+            }
+
+            function importData(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.settings && data.settings.bizName) {
+                            Object.assign(STORE, data);
+                            saveData();
+                            renderAll();
+                            showToast('✅ Data imported successfully!');
+                        } else {
+                            showToast('❌ Invalid backup file');
+                        }
+                    } catch (err) {
+                        showToast('❌ Error reading file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            // ---------- COMPREHENSIVE REPORT GENERATION ----------
+            function generateReportHTML(period, startDate, endDate) {
+                const sales = STORE.sales.filter(s => {
+                    const sDate = getDateStr(s.date);
+                    return sDate >= startDate && sDate <= endDate;
+                });
+
+                const expenses = STORE.expenses.filter(e => {
+                    const eDate = getDateStr(e.date);
+                    return eDate >= startDate && eDate <= endDate;
+                });
+
+                const totalSales = sales.reduce((a, b) => a + (b.total || 0), 0);
+                const totalExpenses = expenses.reduce((a, b) => a + (b.amount || 0), 0);
+                
+                let totalCost = 0;
+                let totalProfit = 0;
+                sales.forEach(sale => {
+                    const { cost, profit } = calculateSaleProfit(sale);
+                    totalCost += cost;
+                    totalProfit += profit;
+                });
+                
+                const netProfit = totalProfit - totalExpenses;
+                const currency = STORE.settings.currency || 'GH₵';
+                const bizName = STORE.settings.bizName || 'My Business';
+                const owner = STORE.settings.owner || 'Business Owner';
+                const logo = STORE.settings.logo || '';
+
+                const salesByDay = {};
+                sales.forEach(s => {
+                    const day = getDateStr(s.date);
+                    if (!salesByDay[day]) salesByDay[day] = { sales: 0, cost: 0, profit: 0, count: 0 };
+                    const { cost, profit } = calculateSaleProfit(s);
+                    salesByDay[day].sales += s.total;
+                    salesByDay[day].cost += cost;
+                    salesByDay[day].profit += profit;
+                    salesByDay[day].count += 1;
+                });
+
+                const expensesByCategory = {};
+                expenses.forEach(e => {
+                    expensesByCategory[e.category] = (expensesByCategory[e.category] || 0) + e.amount;
+                });
+
+                const paymentMethods = {};
+                sales.forEach(s => {
+                    paymentMethods[s.payment] = (paymentMethods[s.payment] || 0) + s.total;
+                });
+
+                const productSales = {};
+                sales.forEach(s => {
+                    if (!productSales[s.product]) productSales[s.product] = { revenue: 0, profit: 0, qty: 0 };
+                    const { profit } = calculateSaleProfit(s);
+                    productSales[s.product].revenue += s.total;
+                    productSales[s.product].profit += profit;
+                    productSales[s.product].qty += s.qty;
+                });
+                const topProducts = Object.entries(productSales).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5);
+
+                const customerSales = {};
+                sales.forEach(s => {
+                    if (s.customer && s.customer !== 'Walk-in') {
+                        if (!customerSales[s.customer]) customerSales[s.customer] = { revenue: 0, profit: 0, phone: s.customerPhone || '' };
+                        const { profit } = calculateSaleProfit(s);
+                        customerSales[s.customer].revenue += s.total;
+                        customerSales[s.customer].profit += profit;
+                    }
+                });
+                const topCustomers = Object.entries(customerSales).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5);
+
+                const outstandingDebts = STORE.debts.filter(d => d.status === 'Outstanding' || d.status === 'Overdue');
+                const totalOutstanding = outstandingDebts.reduce((a, b) => a + (b.amount || 0), 0);
+
+                const dailyBreakdown = {};
+                const allDates = [...new Set([
+                    ...sales.map(s => getDateStr(s.date)),
+                    ...expenses.map(e => getDateStr(e.date))
+                ])].sort();
+
+                allDates.forEach(date => {
+                    const daySales = sales.filter(s => getDateStr(s.date) === date);
+                    let dayTotalSales = 0,
+                        dayTotalCost = 0,
+                        dayTotalProfit = 0;
+                    daySales.forEach(s => {
+                        const { cost, profit } = calculateSaleProfit(s);
+                        dayTotalSales += s.total;
+                        dayTotalCost += cost;
+                        dayTotalProfit += profit;
+                    });
+                    const dayExpenses = expenses.filter(e => getDateStr(e.date) === date).reduce((a, b) => a + b
+                        .amount, 0);
+                    dailyBreakdown[date] = { 
+                        sales: dayTotalSales, 
+                        cost: dayTotalCost,
+                        profit: dayTotalProfit,
+                        expenses: dayExpenses,
+                        netProfit: dayTotalProfit - dayExpenses
+                    };
+                });
+
+                let html = `
+                <html>
+                <head><meta charset="UTF-8"><title>${bizName} - ${period} Report</title>
+                <style>
+                    body { font-family: 'Inter', Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; background: #ffffff; }
+                    .header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #5f3d8a; }
+                    .header .logo { max-width: 80px; max-height: 80px; border-radius: 50%; margin-bottom: 10px; }
+                    .header h1 { color: #5f3d8a; margin-bottom: 4px; font-size: 28px; }
+                    .header p { color: #6b5f7a; margin: 4px 0; }
+                    .section { margin-bottom: 30px; }
+                    .section h2 { color: #1e142b; border-bottom: 2px solid #f0ebf7; padding-bottom: 8px; margin-bottom: 16px; font-size: 18px; }
+                    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+                    .stat-card { background: #faf8fd; border-radius: 12px; padding: 16px; border: 1px solid #ede7f5; }
+                    .stat-card .label { font-size: 12px; color: #7b6e8a; font-weight: 500; }
+                    .stat-card .value { font-size: 24px; font-weight: 700; color: #1e142b; margin-top: 4px; }
+                    .stat-card .sub { font-size: 13px; color: #6b5f7a; margin-top: 4px; }
+                    .profit-positive { color: #1d6f44; }
+                    .profit-negative { color: #b13e3e; }
+                    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+                    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ede7f5; }
+                    th { background: #f5f1fb; font-weight: 600; color: #1e142b; }
+                    tr:hover { background: #faf8fd; }
+                    .amount-positive { color: #1d6f44; }
+                    .amount-negative { color: #b13e3e; }
+                    .footer { margin-top: 40px; text-align: center; color: #8d7e9e; font-size: 12px; border-top: 2px solid #ede7f5; padding-top: 20px; }
+                    .badge { background: #e6def0; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; display: inline-block; }
+                    .badge-success { background: #d9f0e1; color: #1d6f44; }
+                    .badge-warning { background: #fce9d4; color: #a8662c; }
+                    @media print { body { padding: 20px; } .no-print { display: none; } }
+                    .text-center { text-align: center; }
+                    .empty-message { color: #8d7e9e; text-align: center; padding: 20px; }
+                </style>
+                </head>
+                <body>
+                    <div class="header">
+                        ${logo ? `<img src="${logo}" alt="Business Logo" class="logo">` : ''}
+                        <h1>🌸 ${bizName}</h1>
+                        <p><strong>${period} Business Report</strong></p>
+                        <p>${startDate} - ${endDate}</p>
+                        <p>Owner: ${owner} | Currency: ${currency}</p>
+                        <p>Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>📊 Financial Summary</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card"><div class="label">Total Revenue (Sales)</div><div class="value">${currency}${totalSales.toFixed(2)}</div><div class="sub">${sales.length} transactions</div></div>
+                            <div class="stat-card"><div class="label">Cost of Goods Sold</div><div class="value">${currency}${totalCost.toFixed(2)}</div><div class="sub">${sales.length} items sold</div></div>
+                            <div class="stat-card"><div class="label">Gross Profit</div><div class="value ${totalProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${currency}${totalProfit.toFixed(2)}</div></div>
+                            <div class="stat-card"><div class="label">Total Expenses</div><div class="value">${currency}${totalExpenses.toFixed(2)}</div><div class="sub">${expenses.length} transactions</div></div>
+                            <div class="stat-card"><div class="label">Net Profit</div><div class="value ${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${currency}${netProfit.toFixed(2)}</div></div>
+                            <div class="stat-card"><div class="label">Profit Margin</div><div class="value">${totalSales > 0 ? ((netProfit/totalSales)*100).toFixed(1) : 0}%</div><div class="sub">Net profit / Revenue</div></div>
+                        </div>
+                    </div>
+                    
+                    ${Object.keys(dailyBreakdown).length > 0 ? `
+                    <div class="section">
+                        <h2>📅 Daily Breakdown</h2>
+                        <table>
+                            <tr><th>Date</th><th>Revenue</th><th>COGS</th><th>Gross Profit</th><th>Expenses</th><th>Net Profit</th></tr>
+                            ${Object.entries(dailyBreakdown).map(([date, data]) => `
+                                <tr>
+                                    <td>${new Date(date + 'T00:00:00').toLocaleDateString()}</td>
+                                    <td>${currency}${data.sales.toFixed(2)}</td>
+                                    <td>${currency}${data.cost.toFixed(2)}</td>
+                                    <td style="color: ${data.profit >= 0 ? '#1d6f44' : '#b13e3e'};">${currency}${data.profit.toFixed(2)}</td>
+                                    <td>${currency}${data.expenses.toFixed(2)}</td>
+                                    <td style="color: ${data.netProfit >= 0 ? '#1d6f44' : '#b13e3e'}; font-weight:600;">${currency}${data.netProfit.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                            <tr style="font-weight:700; background:#f5f1fb;">
+                                <td><strong>TOTAL</strong></td>
+                                <td>${currency}${totalSales.toFixed(2)}</td>
+                                <td>${currency}${totalCost.toFixed(2)}</td>
+                                <td style="color: ${totalProfit >= 0 ? '#1d6f44' : '#b13e3e'};">${currency}${totalProfit.toFixed(2)}</td>
+                                <td>${currency}${totalExpenses.toFixed(2)}</td>
+                                <td style="color: ${netProfit >= 0 ? '#1d6f44' : '#b13e3e'};">${currency}${netProfit.toFixed(2)}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    ` : `<p class="empty-message">No daily data available for this period.</p>`}
+                    
+                    ${Object.keys(paymentMethods).length > 0 ? `
+                    <div class="section">
+                        <h2>💳 Payment Methods Breakdown</h2>
+                        <table>
+                            <tr><th>Payment Method</th><th>Total Amount</th><th>Percentage</th></tr>
+                            ${Object.entries(paymentMethods).map(([method, amount]) => `
+                                <tr>
+                                    <td>${method}</td>
+                                    <td>${currency}${amount.toFixed(2)}</td>
+                                    <td>${totalSales > 0 ? ((amount/totalSales)*100).toFixed(1) : 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    ${Object.keys(expensesByCategory).length > 0 ? `
+                    <div class="section">
+                        <h2>📂 Expenses by Category</h2>
+                        <table>
+                            <tr><th>Category</th><th>Total Amount</th><th>Percentage of Total</th></tr>
+                            ${Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).map(([category, amount]) => `
+                                <tr>
+                                    <td>${category}</td>
+                                    <td class="amount-negative">${currency}${amount.toFixed(2)}</td>
+                                    <td>${totalExpenses > 0 ? ((amount/totalExpenses)*100).toFixed(1) : 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    ${topProducts.length > 0 ? `
+                    <div class="section">
+                        <h2>🏆 Top Selling Products</h2>
+                        <table>
+                            <tr><th>#</th><th>Product</th><th>Qty Sold</th><th>Revenue</th><th>Profit</th><th>Margin</th></tr>
+                            ${topProducts.map((p, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td>${p[0]}</td>
+                                    <td>${p[1].qty}</td>
+                                    <td>${currency}${p[1].revenue.toFixed(2)}</td>
+                                    <td style="color: ${p[1].profit >= 0 ? '#1d6f44' : '#b13e3e'};">${currency}${p[1].profit.toFixed(2)}</td>
+                                    <td>${p[1].revenue > 0 ? ((p[1].profit/p[1].revenue)*100).toFixed(1) : 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    ${topCustomers.length > 0 ? `
+                    <div class="section">
+                        <h2>👥 Top Customers</h2>
+                        <table>
+                            <tr><th>#</th><th>Customer</th><th>Phone</th><th>Total Purchases</th><th>Profit Generated</th></tr>
+                            ${topCustomers.map((c, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td>${c[0]}</td>
+                                    <td>${c[1].phone || '-'}</td>
+                                    <td>${currency}${c[1].revenue.toFixed(2)}</td>
+                                    <td style="color: ${c[1].profit >= 0 ? '#1d6f44' : '#b13e3e'};">${currency}${c[1].profit.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="section">
+                        <h2>📋 All Transactions (${sales.length + expenses.length})</h2>
+                        ${sales.length + expenses.length > 0 ? `
+                        <table>
+                            <tr><th>Date</th><th>Type</th><th>Description</th><th>Customer/Category</th><th>Phone</th><th>Qty</th><th>Amount</th><th>Profit</th></tr>
+                            ${[...sales, ...expenses].sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => {
+                                const isSale = t.total !== undefined;
+                                const { profit } = isSale ? calculateSaleProfit(t) : { profit: 0 };
+                                return `<tr>
+                                    <td>${new Date(t.date).toLocaleDateString()}</td>
+                                    <td><span class="badge ${isSale ? 'badge-success' : 'badge-warning'}">${isSale ? '💰 Sale' : '💸 Expense'}</span></td>
+                                    <td>${isSale ? t.product : t.desc}</td>
+                                    <td>${isSale ? (t.customer || 'Walk-in') : t.category}</td>
+                                    <td>${isSale ? (t.customerPhone || '-') : '-'}</td>
+                                    <td>${isSale ? t.qty : '-'}</td>
+                                    <td style="color: ${isSale ? '#1d6f44' : '#b13e3e'}; font-weight:600;">${isSale ? '+' : '-'}${currency}${(isSale ? t.total : t.amount).toFixed(2)}</td>
+                                    <td style="color: ${profit >= 0 ? '#1d6f44' : '#b13e3e'};">${isSale ? currency + profit.toFixed(2) : '-'}</td>
+                                </tr>`;
+                            }).join('')}
+                        </table>
+                        ` : `<p class="empty-message">No transactions found for this period.</p>`}
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Generated by HerBusiness on ${new Date().toLocaleString()}</p>
+                        <p>💡 Manage your business. Grow your future.</p>
+                        <p style="font-size:10px;">This report contains all financial transactions for the ${period.toLowerCase()} period.</p>
+                    </div>
+                </body>
+                </html>
+                `;
+
+                return html;
+            }
+
+            // ---------- helpers ----------
+            function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+            function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+            function currency() { return STORE.settings.currency || 'GH₵'; }
+
+            // ---------- UI state ----------
+            let currentScreen = 'dashboard';
+            const app = document.getElementById('mainApp');
+            const setupOverlay = document.getElementById('setupOverlay');
+            const toastEl = document.getElementById('toast');
+            let toastTimeout;
+
+            function showToast(msg) {
+                toastEl.textContent = msg;
+                toastEl.classList.add('show');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 3000);
+            }
+
+            // ---------- setup ----------
+            function finishSetup() {
+                const biz = document.getElementById('setupBizName').value.trim();
+                const owner = document.getElementById('setupOwner').value.trim();
+                const currency = document.getElementById('setupCurrency').value;
+                if (!biz || !owner) {
+                    showToast('Please fill in business name and owner');
+                    return false;
+                }
+                STORE.settings.bizName = biz;
+                STORE.settings.owner = owner;
+                STORE.settings.bizType = document.getElementById('setupBizType').value;
+                STORE.settings.currency = currency;
+                saveData();
+                seedSampleData();
+                setupOverlay.classList.add('hidden');
+                app.classList.add('active');
+                renderAll();
+                navigateTo('dashboard');
+                showToast('Welcome, ' + owner + '!');
+                return true;
+            }
+
+            document.getElementById('setupFinish').addEventListener('click', function(e) {
+                e.preventDefault();
+                finishSetup();
+            });
+
+            document.querySelectorAll('#setupBizName, #setupOwner, #setupBizType, #setupCurrency').forEach(el => {
+                el.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        finishSetup();
+                    }
+                });
+            });
+
+            // load data with auto-restore
+            loadData();
+            if (STORE.settings.bizName && STORE.settings.owner) {
+                seedSampleData();
+                setupOverlay.classList.add('hidden');
+                app.classList.add('active');
+                renderAll();
+                navigateTo('dashboard');
+            } else {
+                document.getElementById('setupBizName').value = STORE.settings.bizName || '';
+                document.getElementById('setupOwner').value = STORE.settings.owner || '';
+                document.getElementById('setupCurrency').value = STORE.settings.currency || 'GH₵';
+            }
+
+            // ---------- navigation ----------
+            function navigateTo(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById('screen-' + screenId);
+                if (target) target.classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                const navBtn = document.querySelector(`.nav-item[data-screen="${screenId}"]`);
+                if (navBtn) navBtn.classList.add('active');
+                currentScreen = screenId;
+                if (screenId === 'dashboard') renderDashboard();
+                else if (screenId === 'sales') renderSales();
+                else if (screenId === 'expenses') renderExpenses();
+                else if (screenId === 'customers') renderCustomers();
+                else if (screenId === 'inventory') renderInventory();
+                else if (screenId === 'debts') renderDebts();
+                else if (screenId === 'goals') renderGoals();
+                else if (screenId === 'reminders') renderReminders();
+                else if (screenId === 'reports') renderReports();
+                else if (screenId === 'settings') renderSettings();
+            }
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const screen = this.dataset.screen;
+                    if (screen === 'more') { navigateTo('more'); return; }
+                    navigateTo(screen);
+                });
+            });
+
+            // quick actions
+            document.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    if (action === 'sale') openSaleModal();
+                    else if (action === 'expense') openExpenseModal();
+                    else if (action === 'customer') openCustomerModal();
+                    else if (action === 'product') openProductModal();
+                });
+            });
+
+            // fab buttons
+            document.getElementById('fabSale')?.addEventListener('click', openSaleModal);
+            document.getElementById('fabExpense')?.addEventListener('click', openExpenseModal);
+            document.getElementById('fabCustomer')?.addEventListener('click', openCustomerModal);
+            document.getElementById('fabProduct')?.addEventListener('click', openProductModal);
+            document.getElementById('fabDebt')?.addEventListener('click', openDebtModal);
+            document.getElementById('fabGoal')?.addEventListener('click', openGoalModal);
+            document.getElementById('fabReminder')?.addEventListener('click', openReminderModal);
+            document.getElementById('printReport')?.addEventListener('click', function() {
+                if (currentScreen === 'reports') {
+                    const reportType = document.querySelector('.report-type-btn.active')?.dataset?.type || 'daily';
+                    const html = generateReportByType(reportType);
+                    const win = window.open('', '_blank');
+                    win.document.write(html);
+                    win.document.close();
+                    setTimeout(() => { win.print(); }, 500);
+                    showToast('🖨️ Print dialog opening...');
+                }
+            });
+
+            document.querySelectorAll('[data-nav]').forEach(b => {
+                b.addEventListener('click', function() {
+                    const target = this.dataset.nav;
+                    navigateTo(target);
+                });
+            });
+
+            // ---------- REPORT GENERATION BY TYPE ----------
+            function generateReportByType(type) {
+                const today = new Date();
+                let startDate, endDate, periodName;
+                
+                switch(type) {
+                    case 'daily':
+                        startDate = today.toISOString().slice(0, 10);
+                        endDate = startDate;
+                        periodName = 'Daily';
+                        break;
+                    case 'weekly':
+                        const weekStart = getWeekStart();
+                        startDate = weekStart.toISOString().slice(0, 10);
+                        endDate = today.toISOString().slice(0, 10);
+                        periodName = 'Weekly';
+                        break;
+                    case 'monthly':
+                        const monthStart = getMonthStart();
+                        startDate = monthStart.toISOString().slice(0, 10);
+                        endDate = today.toISOString().slice(0, 10);
+                        periodName = 'Monthly';
+                        break;
+                    default:
+                        startDate = today.toISOString().slice(0, 10);
+                        endDate = startDate;
+                        periodName = 'Daily';
+                }
+                
+                return generateReportHTML(periodName, startDate, endDate);
+            }
+
+            // ---------- MODAL engine ----------
+            function openModal(html, onSave) {
+                const overlay = document.getElementById('modalOverlay');
+                document.getElementById('modalCard').innerHTML = html;
+                overlay.classList.add('open');
+                const saveBtn = document.getElementById('modalSave');
+                if (saveBtn) {
+                    saveBtn.onclick = function(e) {
+                        e.preventDefault();
+                        const data = {};
+                        const inputs = document.querySelectorAll('#modalCard input, #modalCard select, #modalCard textarea');
+                        inputs.forEach(inp => { data[inp.name] = inp.value; });
+                        if (onSave(data)) {
+                            overlay.classList.remove('open');
+                            renderAll();
+                            showToast('Saved!');
+                        }
+                    };
+                }
+                const cancelBtn = document.getElementById('modalCancel');
+                if (cancelBtn) cancelBtn.onclick = () => overlay.classList.remove('open');
+                overlay.onclick = function(e) { if (e.target === overlay) overlay.classList.remove('open'); };
+            }
+
+            // ---------- BACKUP UI ----------
+            function showBackupOptions() {
+                const html = `<h3>📦 Data Backup & Recovery</h3>
+                <p style="color:#6b5f7a; margin-bottom:16px;">Your data is automatically backed up. You can also manually export or import your business data.</p>
+                <div class="backup-section">
+                    <div class="label"><i class="fas fa-download"></i> Export Data</div>
+                    <button class="btn-primary" id="exportBtn" style="width:100%;">📥 Download Backup</button>
+                </div>
+                <div class="backup-section">
+                    <div class="label"><i class="fas fa-upload"></i> Import Data</div>
+                    <input type="file" id="importFile" accept=".json" style="display:none;">
+                    <button class="btn-secondary" id="importBtn" style="width:100%;">📤 Import Backup</button>
+                </div>
+                <div class="backup-section" style="border-color:#d9f0e1;">
+                    <div class="label"><i class="fas fa-shield-alt" style="color:#1d6f44;"></i> Auto-Backup Status</div>
+                    <div style="font-size:14px; color:#1d6f44;">✅ Data is automatically backed up to multiple locations</div>
+                    <div style="font-size:12px; color:#6b5f7a; margin-top:4px;">Last backup: ${new Date().toLocaleString()}</div>
+                </div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Close</button></div>`;
+
+                const overlay = document.getElementById('modalOverlay');
+                document.getElementById('modalCard').innerHTML = html;
+                overlay.classList.add('open');
+
+                document.getElementById('exportBtn')?.addEventListener('click', function() {
+                    exportData();
+                });
+
+                document.getElementById('importBtn')?.addEventListener('click', function() {
+                    document.getElementById('importFile')?.click();
+                });
+
+                document.getElementById('importFile')?.addEventListener('change', function(e) {
+                    if (this.files && this.files[0]) {
+                        importData(this.files[0]);
+                        this.value = '';
+                        overlay.classList.remove('open');
+                    }
+                });
+
+                document.getElementById('modalCancel')?.addEventListener('click', () => overlay.classList.remove(
+                'open'));
+                overlay.onclick = function(e) { if (e.target === overlay) overlay.classList.remove('open'); };
+            }
+
+            // ---------- CURRENCY SELECTOR IN SETTINGS ----------
+            function openCurrencySelector() {
+                const currentCurrency = STORE.settings.currency || 'GH₵';
+                let html = `<h3>💰 Select Currency</h3>
+                <p style="color:#6b5f7a; margin-bottom:16px;">Choose your preferred currency for the app.</p>
+                <div class="currency-selector">`;
+                
+                CURRENCIES.forEach(c => {
+                    const selected = c.symbol === currentCurrency ? 'selected' : '';
+                    html += `<div class="currency-option ${selected}" onclick="selectCurrency('${c.symbol}')">
+                        <div style="font-size:20px;">${c.flag}</div>
+                        <div style="font-size:13px; margin-top:4px;">${c.symbol}</div>
+                        <div style="font-size:10px; color:#7b6e8a;">${c.name}</div>
+                    </div>`;
+                });
+                
+                html += `</div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Close</button></div>`;
+                
+                const overlay = document.getElementById('modalOverlay');
+                document.getElementById('modalCard').innerHTML = html;
+                overlay.classList.add('open');
+                
+                document.getElementById('modalCancel')?.addEventListener('click', () => overlay.classList.remove('open'));
+                overlay.onclick = function(e) { if (e.target === overlay) overlay.classList.remove('open'); };
+            }
+            
+            window.selectCurrency = function(symbol) {
+                STORE.settings.currency = symbol;
+                saveData();
+                renderAll();
+                showToast('✅ Currency updated to ' + symbol);
+                document.getElementById('modalOverlay').classList.remove('open');
+            };
+
+            // ---------- PRODUCT MODAL ----------
+            function openProductModal(editData) {
+                const d = editData || {};
+                const html = `<h3>${d.id?'Edit':'Add'} Product</h3>
+                <div class="modal-field"><label>Product Name *</label><input name="name" value="${d.name||''}" required placeholder="e.g. Hair Cream"></div>
+                <div class="modal-field"><label>Category</label><input name="category" value="${d.category||''}" placeholder="e.g. Beauty"></div>
+                <div class="modal-field"><label>Quantity in Stock *</label><input type="number" name="qty" value="${d.qty||0}" min="0" required></div>
+                <div class="modal-field"><label>Cost Price (${currency()}) *</label><input type="number" step="0.01" name="buyPrice" value="${d.buyPrice||0}" required></div>
+                <div class="modal-field"><label>Selling Price (${currency()}) *</label><input type="number" step="0.01" name="sellPrice" value="${d.sellPrice||0}" required></div>
+                <div class="modal-field"><label>Minimum Stock Alert Level</label><input type="number" name="minStock" value="${d.minStock||5}" min="0"></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    if (!data.name) { showToast('Product name is required'); return false; }
+                    if (parseFloat(data.qty) < 0) { showToast('Quantity cannot be negative'); return false; }
+                    if (parseFloat(data.buyPrice) < 0) { showToast('Cost price cannot be negative'); return false; }
+                    if (parseFloat(data.sellPrice) < 0) { showToast('Selling price cannot be negative'); return false; }
+                    
+                    const prod = { 
+                        id: d.id || genId(), 
+                        name: data.name.trim(), 
+                        category: data.category || 'General', 
+                        qty: parseFloat(data.qty) || 0, 
+                        buyPrice: parseFloat(data.buyPrice) || 0, 
+                        sellPrice: parseFloat(data.sellPrice) || 0, 
+                        minStock: parseFloat(data.minStock) || 5 
+                    };
+                    
+                    if (d.id) { 
+                        const idx = STORE.products.findIndex(p => p.id === d.id); 
+                        if (idx >= 0) STORE.products[idx] = prod; 
+                        else STORE.products.push(prod); 
+                    } else {
+                        const existing = STORE.products.find(p => p.name.toLowerCase() === data.name.trim().toLowerCase());
+                        if (existing) {
+                            showToast('❌ Product already exists!');
+                            return false;
+                        }
+                        STORE.products.push(prod);
+                    }
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            // ---------- SALE MODAL WITH PRODUCT SELECTION AND PHONE NUMBER ----------
+            function openSaleModal(editData) {
+                const d = editData || {};
+                const productOptions = STORE.products.map(p => 
+                    `<option value="${p.id}" ${d.productId === p.id ? 'selected' : ''}>${p.name} (${currency()}${p.sellPrice.toFixed(2)}) - ${p.qty} in stock</option>`
+                ).join('');
+                
+                const html = `<h3>${d.id?'Edit':'Record'} Sale</h3>
+                <div class="modal-field">
+                    <label>Select Product *</label>
+                    <select name="productId" class="product-select" id="saleProductSelect" required>
+                        <option value="">-- Select Product --</option>
+                        ${productOptions}
+                    </select>
+                    ${STORE.products.length === 0 ? '<p style="color:#b13e3e; font-size:12px; margin-top:4px;">⚠️ No products added yet. Please add products first.</p>' : ''}
+                </div>
+                <div class="modal-field"><label>Customer Name</label><input name="customer" value="${d.customer||''}" placeholder="Customer name"></div>
+                <div class="modal-field"><label>Customer Phone Number</label><input name="customerPhone" value="${d.customerPhone||''}" placeholder="e.g. 0241234567" type="tel"></div>
+                <div class="modal-field"><label>Quantity *</label><input type="number" name="qty" id="saleQtyInput" value="${d.qty||1}" min="1" required></div>
+                <div class="modal-field">
+                    <label>Selling Price (${currency()}) *</label>
+                    <input type="number" step="0.01" name="price" id="salePriceInput" value="${d.price||0}" required>
+                </div>
+                <div class="modal-field"><label>Payment Method</label>
+                    <select name="payment">
+                        <option value="Cash" ${d.payment==='Cash'?'selected':''}>Cash</option>
+                        <option value="Mobile Money" ${d.payment==='Mobile Money'?'selected':''}>Mobile Money</option>
+                        <option value="Bank" ${d.payment==='Bank'?'selected':''}>Bank</option>
+                        <option value="Credit" ${d.payment==='Credit'?'selected':''}>Credit</option>
+                    </select>
+                </div>
+                <div class="profit-summary">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                        <div><div class="label">Total</div><div class="value" id="saleTotalDisplay">${currency()}0.00</div></div>
+                        <div><div class="label">Cost</div><div class="value" id="saleCostDisplay">${currency()}0.00</div></div>
+                        <div><div class="label">Profit</div><div class="value" id="saleProfitDisplay">${currency()}0.00</div></div>
+                    </div>
+                </div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                
+                openModal(html, (data) => {
+                    if (!data.productId) { showToast('Please select a product'); return false; }
+                    const qty = parseFloat(data.qty) || 0;
+                    const price = parseFloat(data.price) || 0;
+                    if (qty < 1) { showToast('Quantity must be at least 1'); return false; }
+                    if (price <= 0) { showToast('Price must be greater than 0'); return false; }
+                    
+                    const product = STORE.products.find(p => p.id === data.productId);
+                    if (!product) { showToast('Product not found'); return false; }
+                    if (product.qty < qty) { 
+                        showToast(`❌ Not enough stock! Only ${product.qty} available.`); 
+                        return false; 
+                    }
+                    
+                    const total = qty * price;
+                    const cost = product.buyPrice * qty;
+                    const profit = total - cost;
+                    
+                    const customerPhone = data.customerPhone || '';
+                    
+                    const sale = { 
+                        id: d.id || genId(), 
+                        product: product.name,
+                        productId: product.id,
+                        customer: data.customer || 'Walk-in', 
+                        customerPhone: customerPhone,
+                        qty, 
+                        price, 
+                        total,
+                        cost: cost,
+                        profit: profit,
+                        payment: data.payment, 
+                        date: new Date().toISOString(), 
+                        status: data.payment === 'Credit' ? 'Credit' : 'Paid' 
+                    };
+                    
+                    if (sale.payment === 'Credit') {
+                        STORE.debts.push({ 
+                            id: genId(), 
+                            customer: sale.customer, 
+                            amount: total, 
+                            due: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), 
+                            status: 'Outstanding', 
+                            date: sale.date 
+                        });
+                    }
+                    
+                    if (d.id) {
+                        const idx = STORE.sales.findIndex(s => s.id === d.id);
+                        if (idx >= 0) {
+                            const oldSale = STORE.sales[idx];
+                            const oldProduct = STORE.products.find(p => p.id === oldSale.productId);
+                            if (oldProduct) {
+                                oldProduct.qty += oldSale.qty || 0;
+                            }
+                            STORE.sales[idx] = sale;
+                        } else {
+                            STORE.sales.push(sale);
+                        }
+                    } else {
+                        STORE.sales.push(sale);
+                    }
+                    
+                    product.qty = Math.max(0, product.qty - qty);
+                    
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+                
+                setTimeout(() => {
+                    const qtyField = document.getElementById('saleQtyInput');
+                    const priceField = document.getElementById('salePriceInput');
+                    const productSelect = document.getElementById('saleProductSelect');
+                    const totalDisplay = document.getElementById('saleTotalDisplay');
+                    const costDisplay = document.getElementById('saleCostDisplay');
+                    const profitDisplay = document.getElementById('saleProfitDisplay');
+                    
+                    function updateTotals() {
+                        const qty = parseFloat(qtyField?.value) || 0;
+                        const price = parseFloat(priceField?.value) || 0;
+                        const productId = productSelect?.value;
+                        const product = STORE.products.find(p => p.id === productId);
+                        
+                        const total = qty * price;
+                        const cost = product ? product.buyPrice * qty : 0;
+                        const profit = total - cost;
+                        
+                        if (totalDisplay) totalDisplay.textContent = `${currency()}${total.toFixed(2)}`;
+                        if (costDisplay) costDisplay.textContent = `${currency()}${cost.toFixed(2)}`;
+                        if (profitDisplay) {
+                            profitDisplay.textContent = `${currency()}${profit.toFixed(2)}`;
+                            profitDisplay.style.color = profit >= 0 ? '#1d6f44' : '#b13e3e';
+                        }
+                    }
+                    
+                    if (qtyField) qtyField.addEventListener('input', updateTotals);
+                    if (priceField) priceField.addEventListener('input', updateTotals);
+                    
+                    if (productSelect) {
+                        productSelect.addEventListener('change', function() {
+                            const selectedProduct = STORE.products.find(p => p.id === this.value);
+                            if (selectedProduct && priceField) {
+                                priceField.value = selectedProduct.sellPrice;
+                                updateTotals();
+                            }
+                        });
+                    }
+                    
+                    updateTotals();
+                }, 100);
+            }
+
+            // ---------- MODALS ----------
+            function openExpenseModal(editData) {
+                const d = editData || {};
+                const html = `<h3>${d.id?'Edit':'Add'} Expense</h3>
+                <div class="modal-field"><label>Description</label><input name="desc" value="${d.desc||''}" required></div>
+                <div class="modal-field"><label>Amount (${currency()})</label><input type="number" step="0.01" name="amount" value="${d.amount||0}" required></div>
+                <div class="modal-field"><label>Category</label><select name="category"><option>Stock</option><option>Transportation</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Advertising</option><option>Packaging</option><option>Staff</option><option>Other</option></select></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    if (!data.desc || parseFloat(data.amount) < 0) { showToast('Please fill correctly'); return false; }
+                    const exp = { id: d.id || genId(), desc: data.desc, amount: parseFloat(data.amount),
+                        category: data.category, date: new Date().toISOString() };
+                    if (d.id) { const idx = STORE.expenses.findIndex(e => e.id === d.id); if (idx >= 0) STORE
+                            .expenses[idx] = exp;
+                        else STORE.expenses.push(exp); } else STORE.expenses.push(exp);
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            function openCustomerModal(editData) {
+                const d = editData || {};
+                const html = `<h3>${d.id?'Edit':'Add'} Customer</h3>
+                <div class="modal-field"><label>Name</label><input name="name" value="${d.name||''}" required></div>
+                <div class="modal-field"><label>Phone</label><input name="phone" value="${d.phone||''}"></div>
+                <div class="modal-field"><label>Address</label><input name="address" value="${d.address||''}"></div>
+                <div class="modal-field"><label>Notes</label><textarea name="notes">${d.notes||''}</textarea></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    if (!data.name) { showToast('Name is required'); return false; }
+                    const cust = { id: d.id || genId(), name: data.name, phone: data.phone, address: data
+                            .address, notes: data.notes, totalPurchases: 0, paid: 0, outstanding: 0 };
+                    if (d.id) { const idx = STORE.customers.findIndex(c => c.id === d.id); if (idx >= 0) STORE
+                            .customers[idx] = cust;
+                        else STORE.customers.push(cust); } else STORE.customers.push(cust);
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            function openDebtModal(editData) {
+                const d = editData || {};
+                const html = `<h3>${d.id?'Edit':'Record'} Debt</h3>
+                <div class="modal-field"><label>Customer</label><input name="customer" value="${d.customer||''}" required></div>
+                <div class="modal-field"><label>Amount (${currency()})</label><input type="number" step="0.01" name="amount" value="${d.amount||0}" required></div>
+                <div class="modal-field"><label>Due date</label><input type="date" name="due" value="${d.due||todayStr()}"></div>
+                <div class="modal-field"><label>Status</label><select name="status"><option value="Outstanding">Outstanding</option><option value="Partially Paid">Partially Paid</option><option value="Paid">Paid</option><option value="Overdue">Overdue</option></select></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    if (!data.customer || parseFloat(data.amount) < 0) { showToast(
+                        'Customer and amount required'); return false; }
+                    const debt = { id: d.id || genId(), customer: data.customer, amount: parseFloat(data
+                            .amount), due: data.due, status: data.status, date: new Date().toISOString() };
+                    if (d.id) { const idx = STORE.debts.findIndex(dt => dt.id === d.id); if (idx >= 0) STORE
+                            .debts[idx] = debt;
+                        else STORE.debts.push(debt); } else STORE.debts.push(debt);
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            function openGoalModal() {
+                const g = STORE.goals;
+                const html = `<h3>Set Business Targets</h3>
+                <div class="modal-field"><label>Daily Sales Target (${currency()})</label><input type="number" step="0.01" name="dailySales" value="${g.dailySales||0}"></div>
+                <div class="modal-field"><label>Weekly Sales Target (${currency()})</label><input type="number" step="0.01" name="weeklySales" value="${g.weeklySales||0}"></div>
+                <div class="modal-field"><label>Monthly Sales Target (${currency()})</label><input type="number" step="0.01" name="monthlySales" value="${g.monthlySales||0}"></div>
+                <div class="modal-field"><label>Monthly Profit Target (${currency()})</label><input type="number" step="0.01" name="monthlyProfit" value="${g.monthlyProfit||0}"></div>
+                <div class="modal-field"><label>Savings Target (${currency()})</label><input type="number" step="0.01" name="savings" value="${g.savings||0}"></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    STORE.goals = { dailySales: parseFloat(data.dailySales) || 0, weeklySales: parseFloat(data
+                            .weeklySales) || 0, monthlySales: parseFloat(data.monthlySales) || 0,
+                        monthlyProfit: parseFloat(data.monthlyProfit) || 0, savings: parseFloat(data
+                            .savings) || 0 };
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            function openReminderModal(editData) {
+                const d = editData || {};
+                const html = `<h3>${d.id?'Edit':'Add'} Reminder</h3>
+                <div class="modal-field"><label>Title</label><input name="title" value="${d.title||''}" required></div>
+                <div class="modal-field"><label>Date</label><input type="date" name="date" value="${d.date||todayStr()}"></div>
+                <div class="modal-field"><label>Time</label><input type="time" name="time" value="${d.time||''}"></div>
+                <div class="modal-field"><label>Notes</label><textarea name="notes">${d.notes||''}</textarea></div>
+                <div class="modal-field"><label>Completed</label><select name="completed"><option value="false">No</option><option value="true" ${d.completed?'selected':''}>Yes</option></select></div>
+                <div class="modal-actions"><button id="modalCancel" class="btn-outline">Cancel</button><button id="modalSave" class="btn-primary">Save</button></div>`;
+                openModal(html, (data) => {
+                    if (!data.title) { showToast('Title required'); return false; }
+                    const rem = { id: d.id || genId(), title: data.title, date: data.date, time: data.time,
+                        notes: data.notes, completed: data.completed === 'true' };
+                    if (d.id) { const idx = STORE.reminders.findIndex(r => r.id === d.id); if (idx >= 0) STORE
+                            .reminders[idx] = rem;
+                        else STORE.reminders.push(rem); } else STORE.reminders.push(rem);
+                    saveData();
+                    renderAll();
+                    return true;
+                });
+            }
+
+            // ---------- RENDER FUNCTIONS ----------
+            function renderAll() {
+                renderDashboard();
+                renderSales();
+                renderExpenses();
+                renderCustomers();
+                renderInventory();
+                renderDebts();
+                renderGoals();
+                renderReminders();
+                renderReports();
+                renderSettings();
+                document.getElementById('bizNameDisplay').textContent = STORE.settings.bizName || 'My Business';
+                document.getElementById('ownerDisplay').textContent = '👤 ' + (STORE.settings.owner || '');
+                const hr = new Date().getHours();
+                let greet = 'Good evening 👋';
+                if (hr < 12) greet = 'Good morning 👋';
+                else if (hr < 17) greet = 'Good afternoon 👋';
+                document.getElementById('greetingText').textContent = greet;
+                updateLogoDisplay();
+                
+                const salesCount = document.getElementById('salesCount');
+                if (salesCount) salesCount.textContent = STORE.sales.length;
+            }
+
+            function renderDashboard() {
+                const today = todayStr();
+                const weekStart = getWeekStart().toISOString().slice(0, 10);
+                const monthStart = getMonthStart().toISOString().slice(0, 10);
+                
+                const todayData = getDailySalesProfit(today);
+                const todayExpenses = STORE.expenses.filter(e => getDateStr(e.date) === today).reduce((a, b) => a + b.amount, 0);
+                const todayNetProfit = todayData.totalProfit - todayExpenses;
+                
+                const weekData = getPeriodProfit(weekStart, today);
+                const weekExpenses = STORE.expenses.filter(e => {
+                    const eDate = getDateStr(e.date);
+                    return eDate >= weekStart && eDate <= today;
+                }).reduce((a, b) => a + b.amount, 0);
+                const weekNetProfit = weekData.totalProfit - weekExpenses;
+                
+                const monthData = getPeriodProfit(monthStart, today);
+                const monthExpenses = STORE.expenses.filter(e => {
+                    const eDate = getDateStr(e.date);
+                    return eDate >= monthStart && eDate <= today;
+                }).reduce((a, b) => a + b.amount, 0);
+                const monthNetProfit = monthData.totalProfit - monthExpenses;
+                
+                const totalDebt = STORE.debts.reduce((a, b) => a + b.amount, 0);
+                
+                document.getElementById('dashStats').innerHTML = `
+                <div class="stat-card"><div class="label">Today's Sales</div><div class="value">${currency()}${todayData.totalSales.toFixed(2)}</div></div>
+                <div class="stat-card"><div class="label">Today's Expenses</div><div class="value">${currency()}${todayExpenses.toFixed(2)}</div></div>
+                <div class="stat-card"><div class="label">Today's Net Profit</div><div class="value ${todayNetProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${currency()}${todayNetProfit.toFixed(2)}</div></div>
+                <div class="stat-card"><div class="label">Customer Debt</div><div class="value">${currency()}${totalDebt.toFixed(2)}</div></div>
+                <div class="stat-card"><div class="label">Weekly Net Profit</div><div class="value ${weekNetProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${currency()}${weekNetProfit.toFixed(2)}</div></div>
+                <div class="stat-card"><div class="label">Monthly Net Profit</div><div class="value ${monthNetProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${currency()}${monthNetProfit.toFixed(2)}</div></div>
+                `;
+                
+                const days = [];
+                for (let i = 6; i >= 0; i--) { 
+                    const d = new Date(); 
+                    d.setDate(d.getDate() - i); 
+                    days.push(d.toISOString().slice(0, 10)); 
+                }
+                const bars = days.map(day => {
+                    const dayData = getDailySalesProfit(day);
+                    const dayExpenses = STORE.expenses.filter(e => getDateStr(e.date) === day).reduce((a, b) => a + b.amount, 0);
+                    return dayData.totalProfit - dayExpenses;
+                });
+                const max = Math.max(1, ...bars.map(Math.abs));
+                document.getElementById('chartBars').innerHTML = bars.map((v, i) => {
+                    const height = Math.max(5, (Math.abs(v) / max) * 50);
+                    const color = v >= 0 ? '#1d6f44' : '#b13e3e';
+                    return `<div class="bar-item">
+                        <div class="bar" style="height:${height}px; background:${color};"></div>
+                        <div class="bar-label">${days[i].slice(5)}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            function renderSales() {
+                const container = document.getElementById('salesList');
+                if (!STORE.sales.length) { container.innerHTML =
+                        `<div class="empty-state">No sales recorded yet.<br>Tap + Add Sale</div>`; return; }
+                container.innerHTML = STORE.sales.slice().reverse().map(s => {
+                    const profitClass = s.profit >= 0 ? 'positive' : 'negative';
+                    return `<div class="list-item">
+                        <div class="info">
+                            <strong>${s.product}</strong>
+                            <span class="meta">${s.customer} ${s.customerPhone ? '· ' + s.customerPhone : ''}</span>
+                            <span class="meta">${currency()}${s.total.toFixed(2)} · Qty: ${s.qty}</span>
+                            <span class="meta">Profit: <span class="profit-badge ${profitClass}">${currency()}${(s.profit||0).toFixed(2)}</span></span>
+                            <span class="meta">${new Date(s.date).toLocaleDateString()}</span>
+                        </div>
+                        <span class="badge ${s.status==='Credit'?'warning':'success'}">${s.status}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            function renderExpenses() {
+                const container = document.getElementById('expenseList');
+                if (!STORE.expenses.length) { container.innerHTML =
+                    `<div class="empty-state">No expenses recorded.</div>`; return; }
+                container.innerHTML = STORE.expenses.slice().reverse().map(e =>
+                    `<div class="list-item"><div class="info"><strong>${e.desc}</strong><span class="meta">${e.category} · ${currency()}${e.amount.toFixed(2)}</span></div></div>`
+                    ).join('');
+            }
+
+            function renderCustomers() {
+                const container = document.getElementById('customerList');
+                if (!STORE.customers.length) { container.innerHTML = `<div class="empty-state">No customers yet.</div>`;
+                    return; }
+                container.innerHTML = STORE.customers.map(c =>
+                    `<div class="list-item"><div class="info"><strong>${c.name}</strong><span class="meta">${c.phone||''} · Purchases: ${currency()}${(c.totalPurchases||0).toFixed(2)}</span><span class="meta">Outstanding: ${currency()}${(c.outstanding||0).toFixed(2)}</span></div></div>`
+                    ).join('');
+            }
+
+            function renderInventory() {
+                const container = document.getElementById('inventoryList');
+                const countEl = document.getElementById('inventoryCount');
+                if (countEl) countEl.textContent = `${STORE.products.length} items`;
+                
+                if (!STORE.products.length) { 
+                    container.innerHTML = `<div class="empty-state">No products in inventory.<br>Tap + Product to add your first product.</div>`; 
+                    return; 
+                }
+                
+                container.innerHTML = STORE.products.map(p => {
+                    const profit = p.sellPrice - p.buyPrice;
+                    const profitMargin = p.buyPrice > 0 ? ((profit / p.buyPrice) * 100).toFixed(1) : 0;
+                    let statusText = 'In Stock';
+                    let statusClass = 'in-stock';
+                    
+                    if (p.qty <= 0) { 
+                        statusText = 'Out of Stock'; 
+                        statusClass = 'out-of-stock';
+                    } else if (p.qty <= p.minStock) { 
+                        statusText = 'Low Stock'; 
+                        statusClass = 'low-stock';
+                    }
+                    
+                    return `<div class="list-item">
+                        <div class="info">
+                            <strong>${p.name}</strong>
+                            <span class="meta">Category: ${p.category} · Cost: ${currency()}${p.buyPrice.toFixed(2)} · Sell: ${currency()}${p.sellPrice.toFixed(2)}</span>
+                            <span class="meta">Qty: ${p.qty} · Profit/item: ${currency()}${profit.toFixed(2)} (${profitMargin}%)</span>
+                            <span class="meta"><span class="stock-badge ${statusClass}">${statusText}</span></span>
+                        </div>
+                        <div>
+                            <button class="quick-btn" style="padding:4px 10px; font-size:11px;" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="quick-btn" style="padding:4px 10px; font-size:11px; background:#fce4e4;" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash" style="color:#b13e3e;"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            
+            window.editProduct = function(id) {
+                const product = STORE.products.find(p => p.id === id);
+                if (product) {
+                    openProductModal(product);
+                }
+            };
+            
+            window.deleteProduct = function(id) {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    const idx = STORE.products.findIndex(p => p.id === id);
+                    if (idx >= 0) {
+                        STORE.products.splice(idx, 1);
+                        saveData();
+                        renderAll();
+                        showToast('Product deleted');
+                    }
+                }
+            };
+
+            function renderDebts() {
+                const container = document.getElementById('debtsList');
+                if (!STORE.debts.length) { container.innerHTML = `<div class="empty-state">No debts recorded.</div>`;
+                    return; }
+                container.innerHTML = STORE.debts.map(d =>
+                    `<div class="list-item"><div class="info"><strong>${d.customer}</strong><span class="meta">Owes: ${currency()}${d.amount.toFixed(2)} · Due: ${d.due}</span></div><span class="badge ${d.status==='Paid'?'success':'warning'}">${d.status}</span></div>`
+                    ).join('');
+            }
+
+            function renderGoals() {
+                const g = STORE.goals;
+                const today = todayStr();
+                const monthStart = getMonthStart().toISOString().slice(0, 10);
+                const monthData = getPeriodProfit(monthStart, today);
+                const monthExpenses = STORE.expenses.filter(e => {
+                    const eDate = getDateStr(e.date);
+                    return eDate >= monthStart && eDate <= today;
+                }).reduce((a, b) => a + b.amount, 0);
+                const monthNetProfit = monthData.totalProfit - monthExpenses;
+                
+                let html =
+                    `<div class="stat-card"><div class="label">Monthly Sales Goal (${currency()})</div><div class="value">${currency()}${(g.monthlySales||0).toFixed(0)}</div><div class="sub">Current: ${currency()}${monthData.totalSales.toFixed(2)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, (monthData.totalSales/(g.monthlySales||1))*100)}%"></div></div></div>`;
+                html +=
+                    `<div class="stat-card"><div class="label">Monthly Profit Goal (${currency()})</div><div class="value">${currency()}${(g.monthlyProfit||0).toFixed(0)}</div><div class="sub">Current: ${currency()}${monthNetProfit.toFixed(2)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, (monthNetProfit/(g.monthlyProfit||1))*100)}%"></div></div></div>`;
+                html +=
+                    `<div class="stat-card"><div class="label">Savings Target (${currency()})</div><div class="value">${currency()}${(g.savings||0).toFixed(0)}</div></div>`;
+                document.getElementById('goalsDisplay').innerHTML = html;
+            }
+
+            function renderReminders() {
+                const container = document.getElementById('remindersList');
+                if (!STORE.reminders.length) { container.innerHTML =
+                    `<div class="empty-state">No reminders set.</div>`; return; }
+                container.innerHTML = STORE.reminders.map(r =>
+                    `<div class="list-item"><div class="info"><strong>${r.title}</strong><span class="meta">${r.date} ${r.time||''}</span></div><span class="badge ${r.completed?'success':''}">${r.completed?'✅ Done':'⏳'}</span></div>`
+                    ).join('');
+            }
+
+            function renderReports() {
+                const reportHTML = `
+                <div style="margin-bottom:12px;">
+                    <label style="font-weight:600; display:block; margin-bottom:6px;">Select Report Type</label>
+                    <div class="report-type-selector">
+                        <div class="report-type-btn active" data-type="daily" onclick="selectReportType('daily')">
+                            <i class="fas fa-calendar-day"></i>
+                            Daily
+                        </div>
+                        <div class="report-type-btn" data-type="weekly" onclick="selectReportType('weekly')">
+                            <i class="fas fa-calendar-week"></i>
+                            Weekly
+                        </div>
+                        <div class="report-type-btn" data-type="monthly" onclick="selectReportType('monthly')">
+                            <i class="fas fa-calendar-alt"></i>
+                            Monthly
+                        </div>
+                    </div>
+                </div>
+                <div class="report-actions">
+                    <button class="btn-primary" id="viewReportBtn"><i class="fas fa-eye"></i> Generate Report</button>
+                    <button class="btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> Print Report</button>
+                </div>
+                <div id="reportPreview" style="background:#faf8fd; border-radius:20px; padding:16px; margin-top:12px; border:1px solid #ede7f5; max-height:500px; overflow-y:auto;">
+                    <p style="color:#6b5f7a; text-align:center;">Select a report type and click "Generate Report" to see all financial details</p>
+                    <p style="color:#6b5f7a; text-align:center; font-size:12px;">${STORE.sales.length} sales and ${STORE.expenses.length} expenses recorded</p>
+                </div>
+                <div class="ad-placeholder"><i class="fas fa-ad"></i> Advertisement</div>
+                `;
+                document.getElementById('reportsContent').innerHTML = reportHTML;
+
+                // Report type selection
+                window.selectReportType = function(type) {
+                    document.querySelectorAll('.report-type-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    document.querySelector(`.report-type-btn[data-type="${type}"]`)?.classList.add('active');
+                };
+
+                document.getElementById('viewReportBtn')?.addEventListener('click', function() {
+                    const activeBtn = document.querySelector('.report-type-btn.active');
+                    const type = activeBtn?.dataset?.type || 'daily';
+                    const html = generateReportByType(type);
+                    document.getElementById('reportPreview').innerHTML = html;
+                    showToast('📊 Report generated!');
+                });
+
+                document.getElementById('printReportBtn')?.addEventListener('click', function() {
+                    const activeBtn = document.querySelector('.report-type-btn.active');
+                    const type = activeBtn?.dataset?.type || 'daily';
+                    const html = generateReportByType(type);
+                    const win = window.open('', '_blank');
+                    win.document.write(html);
+                    win.document.close();
+                    setTimeout(() => { win.print(); }, 500);
+                    showToast('🖨️ Print dialog opening...');
+                });
+            }
+
+            function renderSettings() {
+                const s = STORE.settings;
+                const currentCurrency = s.currency || 'GH₵';
+                const currencyDisplay = CURRENCIES.find(c => c.symbol === currentCurrency);
+                
+                document.getElementById('settingsContent').innerHTML = `
+                <div class="stat-card"><div class="label">Business</div><div class="value">${s.bizName||''}</div><div class="sub">${s.owner||''} · ${s.bizType||''}</div></div>
+                <div class="stat-card"><div class="label">Logo</div><div><button class="quick-btn" onclick="openLogoModal()"><i class="fas fa-image"></i> ${s.logo ? 'Change Logo' : 'Upload Logo'}</button></div></div>
+                <div class="stat-card"><div class="label">Currency</div><div class="value">${currencyDisplay ? currencyDisplay.flag + ' ' + currentCurrency : currentCurrency}</div><div><button class="quick-btn" onclick="openCurrencySelector()"><i class="fas fa-exchange-alt"></i> Change Currency</button></div></div>
+                <div class="stat-card"><div class="label">Data Backup</div><div><button class="quick-btn" onclick="showBackupOptions()"><i class="fas fa-cloud-upload-alt"></i> Backup & Restore</button></div></div>
+                <div class="stat-card"><div class="label">About</div><div class="sub">HerBusiness v2.0 · Complete Profit Tracking</div></div>
+                <button class="btn-danger" style="width:100%; padding:14px; border-radius:60px; border:none; font-weight:600; margin-top:12px;" id="clearData">Clear all data</button>
+                `;
+                
+                document.getElementById('clearData')?.addEventListener('click', function() {
+                    if (confirm('Delete all business data? This cannot be undone.')) {
+                        STORE.sales = [];
+                        STORE.expenses = [];
+                        STORE.customers = [];
+                        STORE.products = [];
+                        STORE.debts = [];
+                        STORE.reminders = [];
+                        STORE.goals = {};
+                        STORE.settings.logo = null;
+                        saveData();
+                        renderAll();
+                        showToast('Data cleared');
+                    }
+                });
+            }
+
+            // initial render
+            renderAll();
+            navigateTo('dashboard');
+
+            // Expose functions globally
+            window.showBackupOptions = showBackupOptions;
+            window.exportData = exportData;
+            window.importData = importData;
+            window.generateReportHTML = generateReportHTML;
+            window.generateReportByType = generateReportByType;
+            window.openLogoModal = openLogoModal;
+            window.openCurrencySelector = openCurrencySelector;
+            window.selectCurrency = selectCurrency;
+            window.selectReportType = selectReportType;
+            window.editProduct = editProduct;
+            window.deleteProduct = deleteProduct;
+
+            // Auto-backup every 5 minutes
+            setInterval(() => {
+                saveData();
+            }, 300000);
+
+            // Backup on page close
+            window.addEventListener('beforeunload', function() {
+                saveData();
+            });
+
+        })();
+    </script>
+</body>
+</html>
