@@ -1281,11 +1281,6 @@
                     <option value="C$">🇨🇦 Canadian Dollar (C$)</option>
                 </select>
             </div>
-            <div class="setup-field">
-                <label>🔑 Business Password</label>
-                <input type="password" id="setupOwnerPassword" placeholder="Set a password for your business" value="owner123">
-                <p style="font-size:11px; color:#8d7e9e; margin-top:4px;">Use this password to access the "More" and "Inventory" sections.</p>
-            </div>
             <button class="btn-primary" id="setupFinish">Start managing 🌱</button>
             <p style="font-size:12px; color:#8d7e9e; margin-top:16px;">Your data stays on your device.</p>
         </div>
@@ -1544,14 +1539,21 @@
                 return STORE.settings.ownerPassword || 'owner123';
             }
 
+            function hasPassword() {
+                return getOwnerPassword().length > 0;
+            }
+
             function verifyPassword(input) {
-                return input === getOwnerPassword();
+                const pw = getOwnerPassword();
+                if (!pw) return true;
+                return input === pw;
             }
 
             // ---------- ONE-TIME PASSWORD STATE ----------
             const unlockedSections = {};
 
             function isSectionUnlocked(section) {
+                if (!hasPassword()) return true;
                 return unlockedSections[section] === true;
             }
 
@@ -1560,7 +1562,11 @@
             }
 
             function promptPasswordOnce(callback, sectionName) {
-                // If already unlocked, call callback immediately
+                if (!hasPassword()) {
+                    if (callback) callback(true);
+                    return;
+                }
+
                 if (isSectionUnlocked(sectionName)) {
                     if (callback) callback(true);
                     return;
@@ -2376,25 +2382,20 @@
                 const currency = document.getElementById('setupCurrency').value;
                 const phone = document.getElementById('setupPhone').value.trim();
                 const address = document.getElementById('setupAddress').value.trim();
-                const ownerPassword = document.getElementById('setupOwnerPassword').value.trim() || 'owner123';
                 
                 if (!biz || !owner) {
                     showToast('Please fill in business name and owner');
                     return false;
                 }
                 
-                if (ownerPassword.length < 4) {
-                    showToast('Password must be at least 4 characters');
-                    return false;
-                }
-                
+                // Always set a default password for protected sections
                 STORE.settings.bizName = biz;
                 STORE.settings.owner = owner;
                 STORE.settings.bizType = document.getElementById('setupBizType').value;
                 STORE.settings.currency = currency;
                 STORE.settings.phone = phone;
                 STORE.settings.address = address;
-                STORE.settings.ownerPassword = ownerPassword;
+                STORE.settings.ownerPassword = 'owner123';
                 
                 saveData();
                 seedSampleData();
@@ -2411,7 +2412,7 @@
                 finishSetup();
             });
 
-            document.querySelectorAll('#setupBizName, #setupOwner, #setupBizType, #setupCurrency, #setupPhone, #setupAddress, #setupOwnerPassword').forEach(el => {
+            document.querySelectorAll('#setupBizName, #setupOwner, #setupBizType, #setupCurrency, #setupPhone, #setupAddress').forEach(el => {
                 el.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -2432,7 +2433,6 @@
                 document.getElementById('setupBizName').value = STORE.settings.bizName || '';
                 document.getElementById('setupOwner').value = STORE.settings.owner || '';
                 document.getElementById('setupCurrency').value = STORE.settings.currency || 'GH₵';
-                document.getElementById('setupOwnerPassword').value = STORE.settings.ownerPassword || 'owner123';
                 document.getElementById('setupPhone').value = STORE.settings.phone || '';
                 document.getElementById('setupAddress').value = STORE.settings.address || '';
             }
@@ -2459,7 +2459,7 @@
             }
 
             // ---------- NAVIGATION HANDLING ----------
-            // "More" and "Inventory" require one-time password. "Home" and others are open.
+            // Only "More" and "Inventory" require password. "Home", "Sales", "Customers" are open.
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const screen = this.dataset.screen;
@@ -2483,16 +2483,14 @@
                 });
             });
 
-            // Buttons inside More screen navigate directly (no password needed since they're already inside)
+            // Buttons inside More screen navigate directly
             document.querySelectorAll('#screen-more .quick-btn[data-nav]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const nav = this.dataset.nav;
-                    // These are inside More, so they're already unlocked
                     navigateTo(nav);
                 });
             });
 
-            // Also handle the individual navigation from the More screen grid
             document.getElementById('navExpenses')?.addEventListener('click', function() {
                 navigateTo('expenses');
             });
@@ -2521,7 +2519,7 @@
                 const chartContainer = document.getElementById('chartContainer');
                 const quickActions = document.getElementById('quickActions');
                 
-                // Hide expense and product buttons for shopkeeper view
+                // Hide expense and product buttons
                 const expenseBtn = document.getElementById('expenseBtn');
                 const addProductBtn = document.getElementById('addProductBtn');
                 if (expenseBtn) expenseBtn.style.display = 'none';
@@ -2568,7 +2566,7 @@
                 openCustomerModal();
             });
 
-            // Add Product - requires one-time password
+            // Add Product - requires password
             document.querySelectorAll('[data-action="product"]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     promptPasswordOnce(function(verified) {
@@ -2587,7 +2585,7 @@
                 }, 'Inventory');
             });
 
-            // Add Expense - requires one-time password
+            // Add Expense - requires password
             document.querySelectorAll('[data-action="expense"]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     promptPasswordOnce(function(verified) {
@@ -2606,7 +2604,7 @@
                 }, 'Expenses');
             });
 
-            // Debts - requires one-time password
+            // Debts - requires password
             document.getElementById('fabDebt')?.addEventListener('click', function() {
                 promptPasswordOnce(function(verified) {
                     if (verified) {
@@ -2615,7 +2613,7 @@
                 }, 'Debts');
             });
 
-            // Goals - requires one-time password
+            // Goals - requires password
             document.getElementById('fabGoal')?.addEventListener('click', function() {
                 promptPasswordOnce(function(verified) {
                     if (verified) {
@@ -2624,7 +2622,7 @@
                 }, 'Goals');
             });
 
-            // Reminders - requires one-time password
+            // Reminders - requires password
             document.getElementById('fabReminder')?.addEventListener('click', function() {
                 promptPasswordOnce(function(verified) {
                     if (verified) {
@@ -2633,7 +2631,7 @@
                 }, 'Reminders');
             });
 
-            // Print Report - requires one-time password
+            // Print Report - requires password
             document.getElementById('printReport')?.addEventListener('click', function() {
                 if (currentScreen === 'reports') {
                     promptPasswordOnce(function(verified) {
@@ -2816,14 +2814,14 @@
                 promptPasswordOnce(function(verified) {
                     if (verified) {
                         const html = `<h3>🔑 Change Password</h3>
-                        <p style="color:#6b5f7a; margin-bottom:16px;">Update your business password.</p>
+                        <p style="color:#6b5f7a; margin-bottom:16px;">Update your business password for protected sections.</p>
                         <div class="modal-field">
                             <label>Current Password</label>
                             <input type="password" id="currentPassword" placeholder="Enter current password" style="letter-spacing:4px;">
                         </div>
                         <div class="modal-field">
                             <label>New Password</label>
-                            <input type="password" id="newPassword" placeholder="Enter new password" style="letter-spacing:4px;">
+                            <input type="password" id="newPassword" placeholder="Enter new password (leave empty to keep current)" style="letter-spacing:4px;">
                         </div>
                         <div class="modal-field">
                             <label>Confirm New Password</label>
@@ -2842,6 +2840,11 @@
                             if (!verifyPassword(current)) {
                                 showToast('❌ Current password is incorrect!');
                                 return false;
+                            }
+                            
+                            if (!newPw) {
+                                showToast('✅ Password unchanged.');
+                                return true;
                             }
                             
                             if (newPw.length < 4) {
@@ -3523,6 +3526,7 @@
                 const s = STORE.settings;
                 const currentCurrency = s.currency || 'GH₵';
                 const currencyDisplay = CURRENCIES.find(c => c.symbol === currentCurrency);
+                const hasPassword = s.ownerPassword && s.ownerPassword.length > 0;
                 
                 document.getElementById('settingsContent').innerHTML = `
                 <div class="stat-card">
@@ -3535,7 +3539,7 @@
                 </div>
                 <div class="stat-card"><div class="label">Logo</div><div><button class="quick-btn" onclick="openLogoModal()"><i class="fas fa-image"></i> ${s.logo ? 'Change Logo' : 'Upload Logo'}</button></div></div>
                 <div class="stat-card"><div class="label">Currency</div><div class="value">${currencyDisplay ? currencyDisplay.flag + ' ' + currentCurrency : currentCurrency}</div><div><button class="quick-btn" onclick="openCurrencySelector()"><i class="fas fa-exchange-alt"></i> Change Currency</button></div></div>
-                <div class="stat-card"><div class="label">🔑 Business Password</div><div><span style="color:#7c3aed;">●●●●●●●●</span> <button class="quick-btn" onclick="openPasswordModal()"><i class="fas fa-key"></i> Change Password</button></div></div>
+                <div class="stat-card"><div class="label">🔑 Business Password</div><div><span style="color:#7c3aed;">${hasPassword ? '●●●●●●●●' : 'No password set'}</span> <button class="quick-btn" onclick="openPasswordModal()"><i class="fas fa-key"></i> ${hasPassword ? 'Change' : 'Set'} Password</button></div></div>
                 <div class="stat-card"><div class="label">Data Backup</div><div><button class="quick-btn" onclick="showBackupOptions()"><i class="fas fa-cloud-upload-alt"></i> Backup & Restore</button></div></div>
                 <div class="stat-card"><div class="label">About</div><div class="sub">HerBusiness v2.0 · Complete Profit Tracking</div></div>
                 <button class="btn-danger" style="width:100%; padding:14px; border-radius:60px; border:none; font-weight:600; margin-top:12px;" id="clearData">Clear all data</button>
